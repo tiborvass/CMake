@@ -1,7 +1,7 @@
 /* Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
    file Copyright.txt or https://cmake.org/licensing for details.  */
-#ifndef cmNinjaTypes_h
-#define cmNinjaTypes_h
+#ifndef cmBuildKitTypes_h
+#define cmBuildKitTypes_h
 
 #include "cmConfigure.h" // IWYU pragma: keep
 
@@ -11,20 +11,20 @@
 #include <utility>
 #include <vector>
 
-enum cmNinjaTargetDepends
+enum cmBuildKitTargetDepends
 {
   DependOnTargetArtifact,
   DependOnTargetOrdering
 };
 
-typedef std::vector<std::string> cmNinjaDeps;
-typedef std::set<std::string> cmNinjaOuts;
-typedef std::map<std::string, std::string> cmNinjaVars;
+typedef std::vector<std::string> cmBuildKitDeps;
+typedef std::set<std::string> cmBuildKitOuts;
+typedef std::map<std::string, std::string> cmBuildKitVars;
 
-class cmNinjaRule
+class cmBuildKitRule
 {
 public:
-  cmNinjaRule(std::string name)
+  cmBuildKitRule(std::string name)
     : Name(std::move(name))
   {
   }
@@ -41,24 +41,24 @@ public:
   bool Generator = false;
 };
 
-class cmNinjaBuild
+class cmBuildKitBuild
 {
 public:
-  cmNinjaBuild() = default;
-  cmNinjaBuild(std::string rule)
+  cmBuildKitBuild() = default;
+  cmBuildKitBuild(std::string rule)
     : Rule(std::move(rule))
   {
   }
 
   std::string Comment;
   std::string Rule;
-  cmNinjaDeps Outputs;
-  cmNinjaDeps ImplicitOuts;
-  cmNinjaDeps ExplicitDeps;
-  cmNinjaDeps ImplicitDeps;
-  cmNinjaDeps OrderOnlyDeps;
-  cmNinjaVars Variables;
+  cmBuildKitDeps Outputs;
+  cmBuildKitDeps ImplicitOuts;
+  cmBuildKitDeps ExplicitDeps;
+  cmBuildKitDeps ImplicitDeps;
+  cmBuildKitDeps OrderOnlyDeps;
+  cmBuildKitVars Variables;
   std::string RspFile;
 };
 
-#endif // ! cmNinjaTypes_h
+#endif // ! cmBuildKitTypes_h

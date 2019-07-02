@@ -1,15 +1,15 @@
 /* Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
    file Copyright.txt or https://cmake.org/licensing for details.  */
-#ifndef cmNinjaTargetGenerator_h
-#define cmNinjaTargetGenerator_h
+#ifndef cmBuildKitTargetGenerator_h
+#define cmBuildKitTargetGenerator_h
 
 #include "cmConfigure.h" // IWYU pragma: keep
 
 #include "cm_jsoncpp_value.h"
 
 #include "cmCommonTargetGenerator.h"
-#include "cmGlobalNinjaGenerator.h"
-#include "cmNinjaTypes.h"
+#include "cmGlobalBuildKitGenerator.h"
+#include "cmBuildKitTypes.h"
 #include "cmOSXBundleGenerator.h"
 
 #include <map>
@@ -21,22 +21,22 @@
 class cmCustomCommand;
 class cmGeneratedFileStream;
 class cmGeneratorTarget;
-class cmLocalNinjaGenerator;
+class cmLocalBuildKitGenerator;
 class cmMakefile;
 class cmSourceFile;
 
-class cmNinjaTargetGenerator : public cmCommonTargetGenerator
+class cmBuildKitTargetGenerator : public cmCommonTargetGenerator
 {
 public:
-  /// Create a cmNinjaTargetGenerator according to the @a target's type.
-  static std::unique_ptr<cmNinjaTargetGenerator> New(
+  /// Create a cmBuildKitTargetGenerator according to the @a target's type.
+  static std::unique_ptr<cmBuildKitTargetGenerator> New(
     cmGeneratorTarget* target);
 
-  /// Build a NinjaTargetGenerator.
-  cmNinjaTargetGenerator(cmGeneratorTarget* target);
+  /// Build a BuildKitTargetGenerator.
+  cmBuildKitTargetGenerator(cmGeneratorTarget* target);
 
   /// Destructor.
-  ~cmNinjaTargetGenerator() override;
+  ~cmBuildKitTargetGenerator() override;
 
   virtual void Generate() = 0;
 
@@ -45,7 +45,7 @@ public:
   bool NeedDepTypeMSVC(const std::string& lang) const;
 
 protected:
-  bool SetMsvcTargetPdbVariable(cmNinjaVars&) const;
+  bool SetMsvcTargetPdbVariable(cmBuildKitVars&) const;
 
   cmGeneratedFileStream& GetBuildFileStream() const;
   cmGeneratedFileStream& GetRulesFileStream() const;
@@ -55,12 +55,12 @@ protected:
     return this->GeneratorTarget;
   }
 
-  cmLocalNinjaGenerator* GetLocalGenerator() const
+  cmLocalBuildKitGenerator* GetLocalGenerator() const
   {
     return this->LocalGenerator;
   }
 
-  cmGlobalNinjaGenerator* GetGlobalGenerator() const;
+  cmGlobalBuildKitGenerator* GetGlobalGenerator() const;
 
   cmMakefile* GetMakefile() const { return this->Makefile; }
 
@@ -91,17 +91,17 @@ protected:
   std::string ComputeIncludes(cmSourceFile const* source,
                               const std::string& language);
 
-  std::string ConvertToNinjaPath(const std::string& path) const
+  std::string ConvertToBuildKitPath(const std::string& path) const
   {
-    return this->GetGlobalGenerator()->ConvertToNinjaPath(path);
+    return this->GetGlobalGenerator()->ConvertToBuildKitPath(path);
   }
-  cmGlobalNinjaGenerator::MapToNinjaPathImpl MapToNinjaPath() const
+  cmGlobalBuildKitGenerator::MapToBuildKitPathImpl MapToBuildKitPath() const
   {
-    return this->GetGlobalGenerator()->MapToNinjaPath();
+    return this->GetGlobalGenerator()->MapToBuildKitPath();
   }
 
   /// @return the list of link dependency for the given target @a target.
-  cmNinjaDeps ComputeLinkDeps(const std::string& linkLanguage) const;
+  cmBuildKitDeps ComputeLinkDeps(const std::string& linkLanguage) const;
 
   /// @return the source file path for the given @a source.
   std::string GetSourceFilePath(cmSourceFile const* source) const;
@@ -140,7 +140,7 @@ protected:
 
   void AdditionalCleanFiles();
 
-  cmNinjaDeps GetObjects() const { return this->Objects; }
+  cmBuildKitDeps GetObjects() const { return this->Objects; }
 
   void EnsureDirectoryExists(const std::string& dir) const;
   void EnsureParentDirectoryExists(const std::string& path) const;
@@ -149,7 +149,7 @@ protected:
   struct MacOSXContentGeneratorType
     : cmOSXBundleGenerator::MacOSXContentGeneratorType
   {
-    MacOSXContentGeneratorType(cmNinjaTargetGenerator* g)
+    MacOSXContentGeneratorType(cmBuildKitTargetGenerator* g)
       : Generator(g)
     {
     }
@@ -157,7 +157,7 @@ protected:
     void operator()(cmSourceFile const& source, const char* pkgloc) override;
 
   private:
-    cmNinjaTargetGenerator* Generator;
+    cmBuildKitTargetGenerator* Generator;
   };
   friend struct MacOSXContentGeneratorType;
 
@@ -166,21 +166,21 @@ protected:
   std::unique_ptr<cmOSXBundleGenerator> OSXBundleGenerator;
   std::set<std::string> MacContentFolders;
 
-  void addPoolNinjaVariable(const std::string& pool_property,
-                            cmGeneratorTarget* target, cmNinjaVars& vars);
+  void addPoolBuildKitVariable(const std::string& pool_property,
+                            cmGeneratorTarget* target, cmBuildKitVars& vars);
 
   bool ForceResponseFile();
 
 private:
-  cmLocalNinjaGenerator* LocalGenerator;
+  cmLocalBuildKitGenerator* LocalGenerator;
   /// List of object files for this target.
-  cmNinjaDeps Objects;
+  cmBuildKitDeps Objects;
   // Fortran Support
-  std::map<std::string, cmNinjaDeps> DDIFiles;
+  std::map<std::string, cmBuildKitDeps> DDIFiles;
   // Swift Support
   Json::Value SwiftOutputMap;
   std::vector<cmCustomCommand const*> CustomCommands;
-  cmNinjaDeps ExtraFiles;
+  cmBuildKitDeps ExtraFiles;
 };
 
-#endif // ! cmNinjaTargetGenerator_h
+#endif // ! cmBuildKitTargetGenerator_h

@@ -1,15 +1,15 @@
 /* Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
    file Copyright.txt or https://cmake.org/licensing for details.  */
-#include "cmNinjaUtilityTargetGenerator.h"
+#include "cmBuildKitUtilityTargetGenerator.h"
 
 #include "cmCustomCommand.h"
 #include "cmCustomCommandGenerator.h"
 #include "cmGeneratedFileStream.h"
 #include "cmGeneratorTarget.h"
-#include "cmGlobalNinjaGenerator.h"
-#include "cmLocalNinjaGenerator.h"
+#include "cmGlobalBuildKitGenerator.h"
+#include "cmLocalBuildKitGenerator.h"
 #include "cmMakefile.h"
-#include "cmNinjaTypes.h"
+#include "cmBuildKitTypes.h"
 #include "cmOutputConverter.h"
 #include "cmSourceFile.h"
 #include "cmStateTypes.h"
@@ -22,29 +22,29 @@
 #include <utility>
 #include <vector>
 
-cmNinjaUtilityTargetGenerator::cmNinjaUtilityTargetGenerator(
+cmBuildKitUtilityTargetGenerator::cmBuildKitUtilityTargetGenerator(
   cmGeneratorTarget* target)
-  : cmNinjaTargetGenerator(target)
+  : cmBuildKitTargetGenerator(target)
 {
 }
 
-cmNinjaUtilityTargetGenerator::~cmNinjaUtilityTargetGenerator() = default;
+cmBuildKitUtilityTargetGenerator::~cmBuildKitUtilityTargetGenerator() = default;
 
-void cmNinjaUtilityTargetGenerator::Generate()
+void cmBuildKitUtilityTargetGenerator::Generate()
 {
-  cmGlobalNinjaGenerator* gg = this->GetGlobalGenerator();
-  cmLocalNinjaGenerator* lg = this->GetLocalGenerator();
+  cmGlobalBuildKitGenerator* gg = this->GetGlobalGenerator();
+  cmLocalBuildKitGenerator* lg = this->GetLocalGenerator();
   cmGeneratorTarget* genTarget = this->GetGeneratorTarget();
 
   std::string utilCommandName = lg->GetCurrentBinaryDirectory();
   utilCommandName += "/CMakeFiles";
   utilCommandName += "/";
   utilCommandName += this->GetTargetName() + ".util";
-  utilCommandName = this->ConvertToNinjaPath(utilCommandName);
+  utilCommandName = this->ConvertToBuildKitPath(utilCommandName);
 
-  cmNinjaBuild phonyBuild("phony");
+  cmBuildKitBuild phonyBuild("phony");
   std::vector<std::string> commands;
-  cmNinjaDeps deps, util_outputs(1, utilCommandName);
+  cmBuildKitDeps deps, util_outputs(1, utilCommandName);
 
   bool uses_terminal = false;
   {
@@ -59,7 +59,7 @@ void cmNinjaUtilityTargetGenerator::Generate()
         lg->AppendCustomCommandLines(ccg, commands);
         std::vector<std::string> const& ccByproducts = ccg.GetByproducts();
         std::transform(ccByproducts.begin(), ccByproducts.end(),
-                       std::back_inserter(util_outputs), MapToNinjaPath());
+                       std::back_inserter(util_outputs), MapToBuildKitPath());
         if (ci.GetUsesTerminal()) {
           uses_terminal = true;
         }
@@ -81,9 +81,9 @@ void cmNinjaUtilityTargetGenerator::Generate()
         const std::vector<std::string>& ccOutputs = ccg.GetOutputs();
         const std::vector<std::string>& ccByproducts = ccg.GetByproducts();
         std::transform(ccOutputs.begin(), ccOutputs.end(),
-                       std::back_inserter(deps), MapToNinjaPath());
+                       std::back_inserter(deps), MapToBuildKitPath());
         std::transform(ccByproducts.begin(), ccByproducts.end(),
-                       std::back_inserter(deps), MapToNinjaPath());
+                       std::back_inserter(deps), MapToBuildKitPath());
       }
     }
   }

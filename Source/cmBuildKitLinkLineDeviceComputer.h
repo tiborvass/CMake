@@ -1,8 +1,8 @@
 /* Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
    file Copyright.txt or https://cmake.org/licensing for details.  */
 
-#ifndef cmNinjaLinkLineDeviceComputer_h
-#define cmNinjaLinkLineDeviceComputer_h
+#ifndef cmBuildKitLinkLineDeviceComputer_h
+#define cmBuildKitLinkLineDeviceComputer_h
 
 #include "cmConfigure.h" // IWYU pragma: keep
 
@@ -10,25 +10,25 @@
 
 #include "cmLinkLineDeviceComputer.h"
 
-class cmGlobalNinjaGenerator;
+class cmGlobalBuildKitGenerator;
 class cmOutputConverter;
 class cmStateDirectory;
 
-class cmNinjaLinkLineDeviceComputer : public cmLinkLineDeviceComputer
+class cmBuildKitLinkLineDeviceComputer : public cmLinkLineDeviceComputer
 {
 public:
-  cmNinjaLinkLineDeviceComputer(cmOutputConverter* outputConverter,
+  cmBuildKitLinkLineDeviceComputer(cmOutputConverter* outputConverter,
                                 cmStateDirectory const& stateDir,
-                                cmGlobalNinjaGenerator const* gg);
+                                cmGlobalBuildKitGenerator const* gg);
 
-  cmNinjaLinkLineDeviceComputer(cmNinjaLinkLineDeviceComputer const&) = delete;
-  cmNinjaLinkLineDeviceComputer& operator=(
-    cmNinjaLinkLineDeviceComputer const&) = delete;
+  cmBuildKitLinkLineDeviceComputer(cmBuildKitLinkLineDeviceComputer const&) = delete;
+  cmBuildKitLinkLineDeviceComputer& operator=(
+    cmBuildKitLinkLineDeviceComputer const&) = delete;
 
   std::string ConvertToLinkReference(std::string const& input) const override;
 
 private:
-  cmGlobalNinjaGenerator const* GG;
+  cmGlobalBuildKitGenerator const* GG;
 };
 
 #endif

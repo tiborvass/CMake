@@ -1,21 +1,21 @@
 /* Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
    file Copyright.txt or https://cmake.org/licensing for details.  */
-#ifndef cmNinjaNormalTargetGenerator_h
-#define cmNinjaNormalTargetGenerator_h
+#ifndef cmBuildKitNormalTargetGenerator_h
+#define cmBuildKitNormalTargetGenerator_h
 
 #include "cmConfigure.h" // IWYU pragma: keep
 
 #include "cmGeneratorTarget.h"
-#include "cmNinjaTargetGenerator.h"
+#include "cmBuildKitTargetGenerator.h"
 
 #include <string>
 #include <vector>
 
-class cmNinjaNormalTargetGenerator : public cmNinjaTargetGenerator
+class cmBuildKitNormalTargetGenerator : public cmBuildKitTargetGenerator
 {
 public:
-  cmNinjaNormalTargetGenerator(cmGeneratorTarget* target);
-  ~cmNinjaNormalTargetGenerator() override;
+  cmBuildKitNormalTargetGenerator(cmGeneratorTarget* target);
+  ~cmBuildKitNormalTargetGenerator() override;
 
   void Generate() override;
 
@@ -44,4 +44,4 @@ private:
   std::string DeviceLinkObject;
 };
 
-#endif // ! cmNinjaNormalTargetGenerator_h
+#endif // ! cmBuildKitNormalTargetGenerator_h

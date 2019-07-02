@@ -1,7 +1,7 @@
 /* Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
    file Copyright.txt or https://cmake.org/licensing for details.  */
-#ifndef cmLocalNinjaGenerator_h
-#define cmLocalNinjaGenerator_h
+#ifndef cmLocalBuildKitGenerator_h
+#define cmLocalBuildKitGenerator_h
 
 #include "cmConfigure.h" // IWYU pragma: keep
 
@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "cmLocalCommonGenerator.h"
-#include "cmNinjaTypes.h"
+#include "cmBuildKitTypes.h"
 #include "cmOutputConverter.h"
 
 class cmCustomCommand;
@@ -20,24 +20,24 @@ class cmCustomCommandGenerator;
 class cmGeneratedFileStream;
 class cmGeneratorTarget;
 class cmGlobalGenerator;
-class cmGlobalNinjaGenerator;
+class cmGlobalBuildKitGenerator;
 class cmMakefile;
 class cmRulePlaceholderExpander;
 class cmake;
 
 /**
- * \class cmLocalNinjaGenerator
+ * \class cmLocalBuildKitGenerator
  * \brief Write a local build.ninja file.
  *
- * cmLocalNinjaGenerator produces a local build.ninja file from its
+ * cmLocalBuildKitGenerator produces a local build.ninja file from its
  * member Makefile.
  */
-class cmLocalNinjaGenerator : public cmLocalCommonGenerator
+class cmLocalBuildKitGenerator : public cmLocalCommonGenerator
 {
 public:
-  cmLocalNinjaGenerator(cmGlobalGenerator* gg, cmMakefile* mf);
+  cmLocalBuildKitGenerator(cmGlobalGenerator* gg, cmMakefile* mf);
 
-  ~cmLocalNinjaGenerator() override;
+  ~cmLocalBuildKitGenerator() override;
 
   void Generate() override;
 
@@ -46,8 +46,8 @@ public:
   std::string GetTargetDirectory(
     cmGeneratorTarget const* target) const override;
 
-  const cmGlobalNinjaGenerator* GetGlobalNinjaGenerator() const;
-  cmGlobalNinjaGenerator* GetGlobalNinjaGenerator();
+  const cmGlobalBuildKitGenerator* GetGlobalBuildKitGenerator() const;
+  cmGlobalBuildKitGenerator* GetGlobalBuildKitGenerator();
 
   const cmake* GetCMakeInstance() const;
   cmake* GetCMakeInstance();
@@ -64,17 +64,17 @@ public:
     std::string const& customStep = std::string(),
     cmGeneratorTarget const* target = nullptr) const;
 
-  void AppendTargetOutputs(cmGeneratorTarget* target, cmNinjaDeps& outputs);
+  void AppendTargetOutputs(cmGeneratorTarget* target, cmBuildKitDeps& outputs);
   void AppendTargetDepends(
-    cmGeneratorTarget* target, cmNinjaDeps& outputs,
-    cmNinjaTargetDepends depends = DependOnTargetArtifact);
+    cmGeneratorTarget* target, cmBuildKitDeps& outputs,
+    cmBuildKitTargetDepends depends = DependOnTargetArtifact);
 
   void AddCustomCommandTarget(cmCustomCommand const* cc,
                               cmGeneratorTarget* target);
   void AppendCustomCommandLines(cmCustomCommandGenerator const& ccg,
                                 std::vector<std::string>& cmdLines);
   void AppendCustomCommandDeps(cmCustomCommandGenerator const& ccg,
-                               cmNinjaDeps& ninjaDeps);
+                               cmBuildKitDeps& ninjaDeps);
 
 protected:
   std::string ConvertToIncludeReference(
@@ -88,14 +88,14 @@ private:
 
   void WriteBuildFileTop();
   void WriteProjectHeader(std::ostream& os);
-  void WriteNinjaRequiredVersion(std::ostream& os);
-  void WriteNinjaFilesInclusion(std::ostream& os);
+  void WriteBuildKitRequiredVersion(std::ostream& os);
+  void WriteBuildKitFilesInclusion(std::ostream& os);
   void WriteProcessedMakefile(std::ostream& os);
   void WritePools(std::ostream& os);
 
   void WriteCustomCommandRule();
   void WriteCustomCommandBuildStatement(cmCustomCommand const* cc,
-                                        const cmNinjaDeps& orderOnlyDeps);
+                                        const cmBuildKitDeps& orderOnlyDeps);
 
   void WriteCustomCommandBuildStatements();
 
@@ -115,4 +115,4 @@ private:
   std::vector<cmCustomCommand const*> CustomCommands;
 };
 
-#endif // ! cmLocalNinjaGenerator_h
+#endif // ! cmLocalBuildKitGenerator_h

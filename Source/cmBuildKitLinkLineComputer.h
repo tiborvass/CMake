@@ -1,8 +1,8 @@
 /* Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
    file Copyright.txt or https://cmake.org/licensing for details.  */
 
-#ifndef cmNinjaLinkLineComputer_h
-#define cmNinjaLinkLineComputer_h
+#ifndef cmBuildKitLinkLineComputer_h
+#define cmBuildKitLinkLineComputer_h
 
 #include "cmConfigure.h" // IWYU pragma: keep
 
@@ -10,24 +10,24 @@
 
 #include "cmLinkLineComputer.h"
 
-class cmGlobalNinjaGenerator;
+class cmGlobalBuildKitGenerator;
 class cmOutputConverter;
 class cmStateDirectory;
 
-class cmNinjaLinkLineComputer : public cmLinkLineComputer
+class cmBuildKitLinkLineComputer : public cmLinkLineComputer
 {
 public:
-  cmNinjaLinkLineComputer(cmOutputConverter* outputConverter,
+  cmBuildKitLinkLineComputer(cmOutputConverter* outputConverter,
                           cmStateDirectory const& stateDir,
-                          cmGlobalNinjaGenerator const* gg);
+                          cmGlobalBuildKitGenerator const* gg);
 
-  cmNinjaLinkLineComputer(cmNinjaLinkLineComputer const&) = delete;
-  cmNinjaLinkLineComputer& operator=(cmNinjaLinkLineComputer const&) = delete;
+  cmBuildKitLinkLineComputer(cmBuildKitLinkLineComputer const&) = delete;
+  cmBuildKitLinkLineComputer& operator=(cmBuildKitLinkLineComputer const&) = delete;
 
   std::string ConvertToLinkReference(std::string const& input) const override;
 
 private:
-  cmGlobalNinjaGenerator const* GG;
+  cmGlobalBuildKitGenerator const* GG;
 };
 
 #endif

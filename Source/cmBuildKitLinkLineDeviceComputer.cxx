@@ -1,20 +1,20 @@
 /* Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
    file Copyright.txt or https://cmake.org/licensing for details.  */
 
-#include "cmNinjaLinkLineDeviceComputer.h"
+#include "cmBuildKitLinkLineDeviceComputer.h"
 
-#include "cmGlobalNinjaGenerator.h"
+#include "cmGlobalBuildKitGenerator.h"
 
-cmNinjaLinkLineDeviceComputer::cmNinjaLinkLineDeviceComputer(
+cmBuildKitLinkLineDeviceComputer::cmBuildKitLinkLineDeviceComputer(
   cmOutputConverter* outputConverter, cmStateDirectory const& stateDir,
-  cmGlobalNinjaGenerator const* gg)
+  cmGlobalBuildKitGenerator const* gg)
   : cmLinkLineDeviceComputer(outputConverter, stateDir)
   , GG(gg)
 {
 }
 
-std::string cmNinjaLinkLineDeviceComputer::ConvertToLinkReference(
+std::string cmBuildKitLinkLineDeviceComputer::ConvertToLinkReference(
   std::string const& lib) const
 {
-  return GG->ConvertToNinjaPath(lib);
+  return GG->ConvertToBuildKitPath(lib);
 }

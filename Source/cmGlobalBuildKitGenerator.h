@@ -1,7 +1,7 @@
 /* Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
    file Copyright.txt or https://cmake.org/licensing for details.  */
-#ifndef cmGlobalNinjaGenerator_h
-#define cmGlobalNinjaGenerator_h
+#ifndef cmGlobalBuildKitGenerator_h
+#define cmGlobalBuildKitGenerator_h
 
 #include "cmConfigure.h" // IWYU pragma: keep
 
@@ -19,7 +19,7 @@
 #include "cmGlobalCommonGenerator.h"
 #include "cmGlobalGenerator.h"
 #include "cmGlobalGeneratorFactory.h"
-#include "cmNinjaTypes.h"
+#include "cmBuildKitTypes.h"
 #include "cmPolicies.h"
 #include "cm_codecvt.hxx"
 
@@ -34,33 +34,33 @@ class cmake;
 struct cmDocumentationEntry;
 
 /**
- * \class cmGlobalNinjaGenerator
+ * \class cmGlobalBuildKitGenerator
  * \brief Write a build.ninja file.
  *
  * The main differences between this generator and the UnixMakefile
  * generator family are:
  * - We don't care about VERBOSE variable or RULE_MESSAGES property since
- *   it is handle by Ninja's -v option.
- * - We don't care about computing any progress status since Ninja manages
+ *   it is handle by BuildKit's -v option.
+ * - We don't care about computing any progress status since BuildKit manages
  *   it itself.
  * - We generate one build.ninja and one rules.ninja per project.
  * - We try to minimize the number of generated rules: one per target and
  *   language.
- * - We use Ninja special variable $in and $out to produce nice output.
- * - We extensively use Ninja variable overloading system to minimize the
+ * - We use BuildKit special variable $in and $out to produce nice output.
+ * - We extensively use BuildKit variable overloading system to minimize the
  *   number of generated rules.
  */
-class cmGlobalNinjaGenerator : public cmGlobalCommonGenerator
+class cmGlobalBuildKitGenerator : public cmGlobalCommonGenerator
 {
 public:
-  /// The default name of Ninja's build file. Typically: build.ninja.
+  /// The default name of BuildKit's build file. Typically: build.ninja.
   static const char* NINJA_BUILD_FILE;
 
-  /// The default name of Ninja's rules file. Typically: rules.ninja.
+  /// The default name of BuildKit's rules file. Typically: rules.ninja.
   /// It is included in the main build.ninja file.
   static const char* NINJA_RULES_FILE;
 
-  /// The indentation string used when generating Ninja's build file.
+  /// The indentation string used when generating BuildKit's build file.
   static const char* INDENT;
 
   /// The shell command used for a no-op.
@@ -104,16 +104,16 @@ public:
    * Write a build statement @a build to @a os.
    * @warning no escaping of any kind is done here.
    */
-  void WriteBuild(std::ostream& os, cmNinjaBuild const& build,
+  void WriteBuild(std::ostream& os, cmBuildKitBuild const& build,
                   int cmdLineLimit = 0, bool* usedResponseFile = nullptr);
 
   void WriteCustomCommandBuild(
     const std::string& command, const std::string& description,
     const std::string& comment, const std::string& depfile,
     const std::string& pool, bool uses_terminal, bool restat,
-    const cmNinjaDeps& outputs,
-    const cmNinjaDeps& explicitDeps = cmNinjaDeps(),
-    const cmNinjaDeps& orderOnlyDeps = cmNinjaDeps());
+    const cmBuildKitDeps& outputs,
+    const cmBuildKitDeps& explicitDeps = cmBuildKitDeps(),
+    const cmBuildKitDeps& orderOnlyDeps = cmBuildKitDeps());
 
   void WriteMacOSXContentBuild(std::string input, std::string output);
 
@@ -121,7 +121,7 @@ public:
    * Write a rule statement to @a os.
    * @warning no escaping of any kind is done here.
    */
-  static void WriteRule(std::ostream& os, cmNinjaRule const& rule);
+  static void WriteRule(std::ostream& os, cmBuildKitRule const& rule);
 
   /**
    * Write a variable named @a name to @a os with value @a value and an
@@ -143,27 +143,27 @@ public:
    * Write a default target statement specifying @a targets as
    * the default targets.
    */
-  static void WriteDefault(std::ostream& os, const cmNinjaDeps& targets,
+  static void WriteDefault(std::ostream& os, const cmBuildKitDeps& targets,
                            const std::string& comment = "");
 
   bool IsGCCOnWindows() const { return UsingGCCOnWindows; }
 
 public:
-  cmGlobalNinjaGenerator(cmake* cm);
+  cmGlobalBuildKitGenerator(cmake* cm);
 
   static cmGlobalGeneratorFactory* NewFactory()
   {
-    return new cmGlobalGeneratorSimpleFactory<cmGlobalNinjaGenerator>();
+    return new cmGlobalGeneratorSimpleFactory<cmGlobalBuildKitGenerator>();
   }
 
   cmLocalGenerator* CreateLocalGenerator(cmMakefile* mf) override;
 
   std::string GetName() const override
   {
-    return cmGlobalNinjaGenerator::GetActualName();
+    return cmGlobalBuildKitGenerator::GetActualName();
   }
 
-  static std::string GetActualName() { return "Ninja"; }
+  static std::string GetActualName() { return "BuildKit"; }
 
   /** Get encoding used by generator for ninja files */
   codecvt::Encoding GetMakefileEncoding() const override;
@@ -214,21 +214,21 @@ public:
     return this->RulesFileStream.get();
   }
 
-  std::string const& ConvertToNinjaPath(const std::string& path) const;
+  std::string const& ConvertToBuildKitPath(const std::string& path) const;
 
-  struct MapToNinjaPathImpl
+  struct MapToBuildKitPathImpl
   {
-    cmGlobalNinjaGenerator* GG;
-    MapToNinjaPathImpl(cmGlobalNinjaGenerator* gg)
+    cmGlobalBuildKitGenerator* GG;
+    MapToBuildKitPathImpl(cmGlobalBuildKitGenerator* gg)
       : GG(gg)
     {
     }
     std::string operator()(std::string const& path)
     {
-      return this->GG->ConvertToNinjaPath(path);
+      return this->GG->ConvertToBuildKitPath(path);
     }
   };
-  MapToNinjaPathImpl MapToNinjaPath() { return MapToNinjaPathImpl(this); }
+  MapToBuildKitPathImpl MapToBuildKitPath() { return MapToBuildKitPathImpl(this); }
 
   // -- Additional clean files
   void AddAdditionalCleanFile(std::string fileName);
@@ -245,7 +245,7 @@ public:
    * Call WriteRule() behind the scene but perform some check before like:
    * - Do not add twice the same rule.
    */
-  void AddRule(cmNinjaRule const& rule);
+  void AddRule(cmBuildKitRule const& rule);
 
   bool HasRule(const std::string& name);
 
@@ -275,7 +275,7 @@ public:
   }
 
   void AddAssumedSourceDependencies(const std::string& source,
-                                    const cmNinjaDeps& deps)
+                                    const cmBuildKitDeps& deps)
   {
     std::set<std::string>& ASD = this->AssumedSourceDependencies[source];
     // Because we may see the same source file multiple times (same source
@@ -285,15 +285,15 @@ public:
   }
 
   void AppendTargetOutputs(
-    cmGeneratorTarget const* target, cmNinjaDeps& outputs,
-    cmNinjaTargetDepends depends = DependOnTargetArtifact);
+    cmGeneratorTarget const* target, cmBuildKitDeps& outputs,
+    cmBuildKitTargetDepends depends = DependOnTargetArtifact);
   void AppendTargetDepends(
-    cmGeneratorTarget const* target, cmNinjaDeps& outputs,
-    cmNinjaTargetDepends depends = DependOnTargetArtifact);
+    cmGeneratorTarget const* target, cmBuildKitDeps& outputs,
+    cmBuildKitTargetDepends depends = DependOnTargetArtifact);
   void AppendTargetDependsClosure(cmGeneratorTarget const* target,
-                                  cmNinjaDeps& outputs);
+                                  cmBuildKitDeps& outputs);
   void AppendTargetDependsClosure(cmGeneratorTarget const* target,
-                                  cmNinjaOuts& outputs, bool omit_self);
+                                  cmBuildKitOuts& outputs, bool omit_self);
   void AddDependencyToAll(cmGeneratorTarget* target);
   void AddDependencyToAll(const std::string& input);
 
@@ -313,12 +313,12 @@ public:
 
   void ComputeTargetObjectDirectory(cmGeneratorTarget* gt) const override;
 
-  // Ninja generator uses 'deps' and 'msvc_deps_prefix' introduced in 1.3
-  static std::string RequiredNinjaVersion() { return "1.3"; }
-  static std::string RequiredNinjaVersionForConsolePool() { return "1.5"; }
-  static std::string RequiredNinjaVersionForImplicitOuts() { return "1.7"; }
-  static std::string RequiredNinjaVersionForManifestRestat() { return "1.8"; }
-  static std::string RequiredNinjaVersionForMultilineDepfile()
+  // BuildKit generator uses 'deps' and 'msvc_deps_prefix' introduced in 1.3
+  static std::string RequiredBuildKitVersion() { return "1.3"; }
+  static std::string RequiredBuildKitVersionForConsolePool() { return "1.5"; }
+  static std::string RequiredBuildKitVersionForImplicitOuts() { return "1.7"; }
+  static std::string RequiredBuildKitVersionForManifestRestat() { return "1.8"; }
+  static std::string RequiredBuildKitVersionForMultilineDepfile()
   {
     return "1.9";
   }
@@ -327,9 +327,9 @@ public:
   bool SupportsManifestRestat() const;
   bool SupportsMultilineDepfile() const;
 
-  std::string NinjaOutputPath(std::string const& path) const;
+  std::string BuildKitOutputPath(std::string const& path) const;
   bool HasOutputPathPrefix() const { return !this->OutputPathPrefix.empty(); }
-  void StripNinjaOutputPathPrefixAsSuffix(std::string& path);
+  void StripBuildKitOutputPathPrefixAsSuffix(std::string& path);
 
   bool WriteDyndepFile(std::string const& dir_top_src,
                        std::string const& dir_top_bld,
@@ -349,7 +349,7 @@ protected:
 private:
   std::string GetEditCacheCommand() const override;
   bool FindMakeProgram(cmMakefile* mf) override;
-  void CheckNinjaFeatures();
+  void CheckBuildKitFeatures();
   bool CheckLanguages(std::vector<std::string> const& languages,
                       cmMakefile* mf) const override;
   bool CheckFortran(cmMakefile* mf) const;
@@ -383,7 +383,7 @@ private:
     std::set<cmGeneratorTarget const*>& depends);
 
   std::string CMakeCmd() const;
-  std::string NinjaCmd() const;
+  std::string BuildKitCmd() const;
 
   /// The file containing the build statement. (the relationship of the
   /// compilation DAG).
@@ -400,7 +400,7 @@ private:
   std::unordered_map<std::string, int> RuleCmdLength;
 
   /// The set of dependencies to add to the "all" target.
-  cmNinjaDeps AllDependencies;
+  cmBuildKitDeps AllDependencies;
 
   bool UsingGCCOnWindows;
 
@@ -428,18 +428,18 @@ private:
   typedef std::map<std::string, cmGeneratorTarget*> TargetAliasMap;
   TargetAliasMap TargetAliases;
 
-  std::map<cmGeneratorTarget const*, cmNinjaOuts> TargetDependsClosures;
+  std::map<cmGeneratorTarget const*, cmBuildKitOuts> TargetDependsClosures;
 
-  /// the local cache for calls to ConvertToNinjaPath
-  mutable std::unordered_map<std::string, std::string> ConvertToNinjaPathCache;
+  /// the local cache for calls to ConvertToBuildKitPath
+  mutable std::unordered_map<std::string, std::string> ConvertToBuildKitPathCache;
 
-  std::string NinjaCommand;
-  std::string NinjaVersion;
-  bool NinjaSupportsConsolePool;
-  bool NinjaSupportsImplicitOuts;
-  bool NinjaSupportsManifestRestat;
-  bool NinjaSupportsMultilineDepfile;
-  unsigned long NinjaSupportsDyndeps;
+  std::string BuildKitCommand;
+  std::string BuildKitVersion;
+  bool BuildKitSupportsConsolePool;
+  bool BuildKitSupportsImplicitOuts;
+  bool BuildKitSupportsManifestRestat;
+  bool BuildKitSupportsMultilineDepfile;
+  unsigned long BuildKitSupportsDyndeps;
 
 private:
   void InitOutputPathPrefix();
@@ -450,4 +450,4 @@ private:
   std::set<std::string> AdditionalCleanFiles;
 };
 
-#endif // ! cmGlobalNinjaGenerator_h
+#endif // ! cmGlobalBuildKitGenerator_h
