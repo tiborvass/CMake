@@ -819,6 +819,26 @@ set(SRCS ${SRCS}
   cmNinjaLinkLineDeviceComputer.h
   )
 
+# BuildKit support
+set(SRCS ${SRCS}
+  cmGlobalBuildKitGenerator.cxx
+  cmGlobalBuildKitGenerator.h
+  cmBuildKitTypes.h
+  cmLocalBuildKitGenerator.cxx
+  cmLocalBuildKitGenerator.h
+  cmBuildKitTargetGenerator.cxx
+  cmBuildKitTargetGenerator.h
+  cmBuildKitNormalTargetGenerator.cxx
+  cmBuildKitNormalTargetGenerator.h
+  cmBuildKitUtilityTargetGenerator.cxx
+  cmBuildKitUtilityTargetGenerator.h
+  cmBuildKitLinkLineComputer.cxx
+  cmBuildKitLinkLineComputer.h
+  cmBuildKitLinkLineDeviceComputer.cxx
+  cmBuildKitLinkLineDeviceComputer.h
+  )
+
+
 # Temporary variable for tools targets
 set(_tools)
 
