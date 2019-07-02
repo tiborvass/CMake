@@ -286,10 +286,10 @@ public:
 
   void AppendTargetOutputs(
     cmGeneratorTarget const* target, cmBuildKitDeps& outputs,
-    cmBuildKitTargetDepends depends = DependOnTargetArtifact);
+    cmBuildKitTargetDepends depends = BKDependOnTargetArtifact);
   void AppendTargetDepends(
     cmGeneratorTarget const* target, cmBuildKitDeps& outputs,
-    cmBuildKitTargetDepends depends = DependOnTargetArtifact);
+    cmBuildKitTargetDepends depends = BKDependOnTargetArtifact);
   void AppendTargetDependsClosure(cmGeneratorTarget const* target,
                                   cmBuildKitDeps& outputs);
   void AppendTargetDependsClosure(cmGeneratorTarget const* target,

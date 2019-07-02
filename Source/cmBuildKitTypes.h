@@ -13,8 +13,8 @@
 
 enum cmBuildKitTargetDepends
 {
-  DependOnTargetArtifact,
-  DependOnTargetOrdering
+  BKDependOnTargetArtifact,
+  BKDependOnTargetOrdering
 };
 
 typedef std::vector<std::string> cmBuildKitDeps;

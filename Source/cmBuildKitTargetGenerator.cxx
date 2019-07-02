@@ -118,7 +118,7 @@ bool cmBuildKitTargetGenerator::NeedDyndep(std::string const& lang) const
   return lang == "Fortran";
 }
 
-std::string cmBuildKitTargetGenerator::OrderDependsTargetForTarget()
+std::string cmBuildKitTargetGenerator::BKOrderDependsTargetForTarget()
 {
   return "cmake_object_order_depends_target_" + this->GetTargetName();
 }
@@ -559,7 +559,7 @@ void cmBuildKitTargetGenerator::WriteCompileRule(const std::string& lang)
     // Run CMake dependency scanner on preprocessed output.
     {
       std::string ccmd = cmakeCmd;
-      ccmd += " -E cmake_ninja_depends --tdi=";
+      ccmd += " -E cmake_buildkit_depends --tdi=";
       ccmd += tdi;
       ccmd += " --lang=";
       ccmd += lang;
@@ -595,7 +595,7 @@ void cmBuildKitTargetGenerator::WriteCompileRule(const std::string& lang)
       std::vector<std::string> ddCmds;
       {
         std::string ccmd = cmakeCmd;
-        ccmd += " -E cmake_ninja_dyndep --tdi=";
+        ccmd += " -E cmake_buildkit_dyndep --tdi=";
         ccmd += tdi;
         ccmd += " --lang=";
         ccmd += lang;
@@ -831,11 +831,11 @@ void cmBuildKitTargetGenerator::WriteObjectBuildStatements()
   {
     cmBuildKitBuild build("phony");
     build.Comment = "Order-only phony target for " + this->GetTargetName();
-    build.Outputs.push_back(this->OrderDependsTargetForTarget());
+    build.Outputs.push_back(this->BKOrderDependsTargetForTarget());
 
     cmBuildKitDeps& orderOnlyDeps = build.OrderOnlyDeps;
     this->GetLocalGenerator()->AppendTargetDepends(
-      this->GeneratorTarget, orderOnlyDeps, DependOnTargetOrdering);
+      this->GeneratorTarget, orderOnlyDeps, BKDependOnTargetOrdering);
 
     // Add order-only dependencies on other files associated with the target.
     cmAppend(orderOnlyDeps, this->ExtraFiles);
@@ -901,7 +901,7 @@ void cmBuildKitTargetGenerator::WriteObjectBuildStatements()
     // refactoring the BuildKit generator to generate targets in
     // dependency order so that we can collect the needed information.
     this->GetLocalGenerator()->AppendTargetDepends(
-      this->GeneratorTarget, build.OrderOnlyDeps, DependOnTargetArtifact);
+      this->GeneratorTarget, build.OrderOnlyDeps, BKDependOnTargetArtifact);
 
     this->GetGlobalGenerator()->WriteBuild(this->GetBuildFileStream(), build);
   }
@@ -1008,7 +1008,7 @@ void cmBuildKitTargetGenerator::WriteObjectBuildStatement(
                    MapToBuildKitPath());
   }
 
-  objBuild.OrderOnlyDeps.push_back(this->OrderDependsTargetForTarget());
+  objBuild.OrderOnlyDeps.push_back(this->BKOrderDependsTargetForTarget());
 
   // If the source file is GENERATED and does not have a custom command
   // (either attached to this source file or another one), assume that one of

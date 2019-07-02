@@ -926,7 +926,7 @@ void cmGlobalBuildKitGenerator::WriteAssumedSourceDependencies()
   }
 }
 
-std::string OrderDependsTargetForTarget(cmGeneratorTarget const* target)
+std::string BKOrderDependsTargetForTarget(cmGeneratorTarget const* target)
 {
   return "cmake_object_order_depends_target_" + target->GetName();
 }
@@ -948,8 +948,8 @@ void cmGlobalBuildKitGenerator::AppendTargetOutputs(
     case cmStateEnums::SHARED_LIBRARY:
     case cmStateEnums::STATIC_LIBRARY:
     case cmStateEnums::MODULE_LIBRARY: {
-      if (depends == DependOnTargetOrdering) {
-        outputs.push_back(OrderDependsTargetForTarget(target));
+      if (depends == BKDependOnTargetOrdering) {
+        outputs.push_back(BKOrderDependsTargetForTarget(target));
         break;
       }
     }
@@ -960,8 +960,8 @@ void cmGlobalBuildKitGenerator::AppendTargetOutputs(
       break;
     }
     case cmStateEnums::OBJECT_LIBRARY: {
-      if (depends == DependOnTargetOrdering) {
-        outputs.push_back(OrderDependsTargetForTarget(target));
+      if (depends == BKDependOnTargetOrdering) {
+        outputs.push_back(BKOrderDependsTargetForTarget(target));
         break;
       }
     }
@@ -1608,7 +1608,7 @@ Compilation of source files within a target is split into the following steps:
     rule Fortran_PREPROCESS
       depfile = $DEP_FILE
       command = gfortran -cpp $DEFINES $INCLUDES $FLAGS -E $in -o $out &&
-                cmake -E cmake_ninja_depends \
+                cmake -E cmake_buildkit_depends \
                   --tdi=FortranDependInfo.json --pp=$out --dep=$DEP_FILE \
                   --obj=$OBJ_FILE --ddi=$DYNDEP_INTERMEDIATE_FILE \
                   --lang=Fortran
@@ -1618,7 +1618,7 @@ Compilation of source files within a target is split into the following steps:
       DEP_FILE = src.f90.o.d
       DYNDEP_INTERMEDIATE_FILE = src.f90.o.ddi
 
-   The ``cmake -E cmake_ninja_depends`` tool reads the preprocessed output
+   The ``cmake -E cmake_buildkit_depends`` tool reads the preprocessed output
    and generates the ninja depfile for preprocessor dependencies.  It also
    generates a "ddi" file (in a format private to CMake) that lists the
    object file that compilation will produce along with the module names
@@ -1629,12 +1629,12 @@ Compilation of source files within a target is split into the following steps:
    files from all sources to produce a ninja "dyndep" file, ``Fortran.dd``.
 
     rule Fortran_DYNDEP
-      command = cmake -E cmake_ninja_dyndep \
+      command = cmake -E cmake_buildkit_dyndep \
                   --tdi=FortranDependInfo.json --lang=Fortran --dd=$out $in
 
     build Fortran.dd: Fortran_DYNDEP src1.f90.o.ddi src2.f90.o.ddi
 
-   The ``cmake -E cmake_ninja_dyndep`` tool reads the "ddi" files from all
+   The ``cmake -E cmake_buildkit_dyndep`` tool reads the "ddi" files from all
    sources in the target and the ``FortranModules.json`` files from targets
    on which the target depends.  It computes dependency edges on compilations
    that require modules to those that provide the modules.  This information
@@ -1680,10 +1680,10 @@ struct cmSourceInfo
   std::set<std::string> Includes;
 };
 
-static std::unique_ptr<cmSourceInfo> cmcmd_cmake_ninja_depends_fortran(
+static std::unique_ptr<cmSourceInfo> cmcmd_cmake_buildkit_depends_fortran(
   std::string const& arg_tdi, std::string const& arg_pp);
 
-int cmcmd_cmake_ninja_depends(std::vector<std::string>::const_iterator argBeg,
+int cmcmd_cmake_buildkit_depends(std::vector<std::string>::const_iterator argBeg,
                               std::vector<std::string>::const_iterator argEnd)
 {
   std::string arg_tdi;
@@ -1706,40 +1706,40 @@ int cmcmd_cmake_ninja_depends(std::vector<std::string>::const_iterator argBeg,
     } else if (cmHasLiteralPrefix(arg, "--lang=")) {
       arg_lang = arg.substr(7);
     } else {
-      cmSystemTools::Error("-E cmake_ninja_depends unknown argument: " + arg);
+      cmSystemTools::Error("-E cmake_buildkit_depends unknown argument: " + arg);
       return 1;
     }
   }
   if (arg_tdi.empty()) {
-    cmSystemTools::Error("-E cmake_ninja_depends requires value for --tdi=");
+    cmSystemTools::Error("-E cmake_buildkit_depends requires value for --tdi=");
     return 1;
   }
   if (arg_pp.empty()) {
-    cmSystemTools::Error("-E cmake_ninja_depends requires value for --pp=");
+    cmSystemTools::Error("-E cmake_buildkit_depends requires value for --pp=");
     return 1;
   }
   if (arg_dep.empty()) {
-    cmSystemTools::Error("-E cmake_ninja_depends requires value for --dep=");
+    cmSystemTools::Error("-E cmake_buildkit_depends requires value for --dep=");
     return 1;
   }
   if (arg_obj.empty()) {
-    cmSystemTools::Error("-E cmake_ninja_depends requires value for --obj=");
+    cmSystemTools::Error("-E cmake_buildkit_depends requires value for --obj=");
     return 1;
   }
   if (arg_ddi.empty()) {
-    cmSystemTools::Error("-E cmake_ninja_depends requires value for --ddi=");
+    cmSystemTools::Error("-E cmake_buildkit_depends requires value for --ddi=");
     return 1;
   }
   if (arg_lang.empty()) {
-    cmSystemTools::Error("-E cmake_ninja_depends requires value for --lang=");
+    cmSystemTools::Error("-E cmake_buildkit_depends requires value for --lang=");
     return 1;
   }
 
   std::unique_ptr<cmSourceInfo> info;
   if (arg_lang == "Fortran") {
-    info = cmcmd_cmake_ninja_depends_fortran(arg_tdi, arg_pp);
+    info = cmcmd_cmake_buildkit_depends_fortran(arg_tdi, arg_pp);
   } else {
-    cmSystemTools::Error("-E cmake_ninja_depends does not understand the " +
+    cmSystemTools::Error("-E cmake_buildkit_depends does not understand the " +
                          arg_lang + " language");
     return 1;
   }
@@ -1776,13 +1776,13 @@ int cmcmd_cmake_ninja_depends(std::vector<std::string>::const_iterator argBeg,
   cmGeneratedFileStream ddif(arg_ddi);
   ddif << ddi;
   if (!ddif) {
-    cmSystemTools::Error("-E cmake_ninja_depends failed to write " + arg_ddi);
+    cmSystemTools::Error("-E cmake_buildkit_depends failed to write " + arg_ddi);
     return 1;
   }
   return 0;
 }
 
-std::unique_ptr<cmSourceInfo> cmcmd_cmake_ninja_depends_fortran(
+std::unique_ptr<cmSourceInfo> cmcmd_cmake_buildkit_depends_fortran(
   std::string const& arg_tdi, std::string const& arg_pp)
 {
   cmFortranCompiler fc;
@@ -1794,7 +1794,7 @@ std::unique_ptr<cmSourceInfo> cmcmd_cmake_ninja_depends_fortran(
       cmsys::ifstream tdif(arg_tdi.c_str(), std::ios::in | std::ios::binary);
       Json::Reader reader;
       if (!reader.parse(tdif, tdio, false)) {
-        cmSystemTools::Error("-E cmake_ninja_depends failed to parse " +
+        cmSystemTools::Error("-E cmake_buildkit_depends failed to parse " +
                              arg_tdi + reader.getFormattedErrorMessages());
         return nullptr;
       }
@@ -1821,7 +1821,7 @@ std::unique_ptr<cmSourceInfo> cmcmd_cmake_ninja_depends_fortran(
   std::set<std::string> defines;
   cmFortranParser parser(fc, includes, defines, finfo);
   if (!cmFortranParser_FilePush(&parser, arg_pp.c_str())) {
-    cmSystemTools::Error("-E cmake_ninja_depends failed to open " + arg_pp);
+    cmSystemTools::Error("-E cmake_buildkit_depends failed to open " + arg_pp);
     return nullptr;
   }
   if (cmFortran_yyparse(parser.Scanner) != 0) {
@@ -1874,7 +1874,7 @@ bool cmGlobalBuildKitGenerator::WriteDyndepFile(
     cmsys::ifstream ddif(arg_ddi.c_str(), std::ios::in | std::ios::binary);
     Json::Reader reader;
     if (!reader.parse(ddif, ddio, false)) {
-      cmSystemTools::Error("-E cmake_ninja_dyndep failed to parse " + arg_ddi +
+      cmSystemTools::Error("-E cmake_buildkit_dyndep failed to parse " + arg_ddi +
                            reader.getFormattedErrorMessages());
       return false;
     }
@@ -1907,7 +1907,7 @@ bool cmGlobalBuildKitGenerator::WriteDyndepFile(
     cmsys::ifstream ltmf(ltmn.c_str(), std::ios::in | std::ios::binary);
     Json::Reader reader;
     if (ltmf && !reader.parse(ltmf, ltm, false)) {
-      cmSystemTools::Error("-E cmake_ninja_dyndep failed to parse " +
+      cmSystemTools::Error("-E cmake_buildkit_dyndep failed to parse " +
                            linked_target_dir +
                            reader.getFormattedErrorMessages());
       return false;
@@ -1969,7 +1969,7 @@ bool cmGlobalBuildKitGenerator::WriteDyndepFile(
   return true;
 }
 
-int cmcmd_cmake_ninja_dyndep(std::vector<std::string>::const_iterator argBeg,
+int cmcmd_cmake_buildkit_dyndep(std::vector<std::string>::const_iterator argBeg,
                              std::vector<std::string>::const_iterator argEnd)
 {
   std::vector<std::string> arg_full =
@@ -1990,20 +1990,20 @@ int cmcmd_cmake_ninja_dyndep(std::vector<std::string>::const_iterator argBeg,
                cmHasLiteralSuffix(arg, ".ddi")) {
       arg_ddis.push_back(arg);
     } else {
-      cmSystemTools::Error("-E cmake_ninja_dyndep unknown argument: " + arg);
+      cmSystemTools::Error("-E cmake_buildkit_dyndep unknown argument: " + arg);
       return 1;
     }
   }
   if (arg_tdi.empty()) {
-    cmSystemTools::Error("-E cmake_ninja_dyndep requires value for --tdi=");
+    cmSystemTools::Error("-E cmake_buildkit_dyndep requires value for --tdi=");
     return 1;
   }
   if (arg_lang.empty()) {
-    cmSystemTools::Error("-E cmake_ninja_dyndep requires value for --lang=");
+    cmSystemTools::Error("-E cmake_buildkit_dyndep requires value for --lang=");
     return 1;
   }
   if (arg_dd.empty()) {
-    cmSystemTools::Error("-E cmake_ninja_dyndep requires value for --dd=");
+    cmSystemTools::Error("-E cmake_buildkit_dyndep requires value for --dd=");
     return 1;
   }
 
@@ -2013,7 +2013,7 @@ int cmcmd_cmake_ninja_dyndep(std::vector<std::string>::const_iterator argBeg,
     cmsys::ifstream tdif(arg_tdi.c_str(), std::ios::in | std::ios::binary);
     Json::Reader reader;
     if (!reader.parse(tdif, tdio, false)) {
-      cmSystemTools::Error("-E cmake_ninja_dyndep failed to parse " + arg_tdi +
+      cmSystemTools::Error("-E cmake_buildkit_dyndep failed to parse " + arg_tdi +
                            reader.getFormattedErrorMessages());
       return 1;
     }

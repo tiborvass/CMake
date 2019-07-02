@@ -71,7 +71,7 @@ protected:
   bool NeedDyndep(std::string const& lang) const;
   bool UsePreprocessedSource(std::string const& lang) const;
 
-  std::string OrderDependsTargetForTarget();
+  std::string BKOrderDependsTargetForTarget();
 
   std::string ComputeOrderDependsForTarget();
 

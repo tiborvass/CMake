@@ -67,7 +67,7 @@ public:
   void AppendTargetOutputs(cmGeneratorTarget* target, cmBuildKitDeps& outputs);
   void AppendTargetDepends(
     cmGeneratorTarget* target, cmBuildKitDeps& outputs,
-    cmBuildKitTargetDepends depends = DependOnTargetArtifact);
+    cmBuildKitTargetDepends depends = BKDependOnTargetArtifact);
 
   void AddCustomCommandTarget(cmCustomCommand const* cc,
                               cmGeneratorTarget* target);
